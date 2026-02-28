@@ -1,0 +1,24 @@
+#wrapper {
+	user-select: none;
+}
+.tabuleiro {
+	background-color: #EEE;
+	display: grid;
+}
+.celula {
+	box-shadow: 0px 0px 20px inset #0004;
+}
+.slot {
+	position: absolute;
+	border-radius: 20px;
+	background-color: #AAAD;
+	width: 50px;
+	height: 50px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: 0.1s top, 0.1s left;
+}
+.debug {
+	background-color: #F00;
+}
