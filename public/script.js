@@ -1,4 +1,5 @@
 const divAreaTabuleiro = document.getElementById("areaTabuleiro");
+const divAreaBolas = document.getElementById("areaBolas");
 
 var tabuleiro = null;
 var pecaSelecionada = null;
@@ -17,7 +18,7 @@ class Tabuleiro {
 		this.origens = [];
 		this.gerarCelulas(_x,_y);
 		this.pecas = [];
-		this.gerarPecas();
+		this.gerarPecas(5);
 		this.reposicionarPecas();
 	}
 	gerarCelulas(_x,_y) {
@@ -159,7 +160,7 @@ class Peca {
 				slotsGerados++;
 				tentativas = 0;
 			} else {
-				if (tentativas >= 5) {
+				if (tentativas >= 50) {
 					console.log(`Peça ${this.id}: Está difícil achar célula livre. Abortando criação de novos slots...`);
 					break;
 				}
@@ -189,6 +190,11 @@ class Peca {
 				}
 			}
 		}
+		if (this.slots.length == 0) {
+			console.log(`AVISO: Preça ${this.id} não foi criada com sucesso!!`);
+			return false;
+		}
+		console.log(`Peça ${this.id} criada com ${this.slots.length} slots`);
 	}
 	reposicionarSlots() {
 		this.slots.forEach(_slot => {
@@ -340,6 +346,7 @@ class Peca {
 	procurarEncaixe() {
 		let tentativa = 0;
 		let encaixes = 4;
+		console.log(`Procurando encaixe da peça ${this.id}`);
 		while (encaixes > 1) {
 			if (tentativa == 50) {
 				console.log("Desisto de tentar mover!");

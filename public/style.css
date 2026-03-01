@@ -1,9 +1,28 @@
+body {
+	margin: 0;
+}
+.debug {
+	background-color: #F00;
+}
+
 #wrapper {
 	user-select: none;
+	display: flex;
+	align-items: center;
+	width: 100vw;
+	height: 100vh;
+	flex-direction: column;
+}
+
+#areaTabuleiro {
+	align-items: center;
+	width: 100%;
 }
 .tabuleiro {
 	background-color: #EEE;
 	display: grid;
+	justify-content: center;
+	padding-bottom: 10px;
 }
 .celula {
 	box-shadow: 0px 0px 20px inset #0004;
@@ -19,6 +38,8 @@
 	justify-content: center;
 	transition: 0.1s top, 0.1s left;
 }
-.debug {
-	background-color: #F00;
+
+#areaBolas {
+	width: 100%;
+	flex-grow: 2;
 }
