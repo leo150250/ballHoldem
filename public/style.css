@@ -23,6 +23,7 @@ body {
 	display: grid;
 	justify-content: center;
 	padding-bottom: 10px;
+	position: relative;
 }
 .celula {
 	box-shadow: 0px 0px 20px inset #0004;

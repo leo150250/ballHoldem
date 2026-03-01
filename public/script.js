@@ -34,6 +34,11 @@ class Tabuleiro {
 		for (let i = 0; i < _numPecas; i++) {
 			let origem = this.origens[Math.floor(Math.random()*this.numOrigens)];
 			let novaPeca = this.gerarPeca(origem.x,origem.y,_numPecas);
+			if (novaPeca.slots.length == 0) {
+				this.pecas.pop();
+				i--;
+				continue;
+			}
 			novaPeca.procurarEncaixe();
 		}
 		//this.gerarPeca(0,0,4);
@@ -436,6 +441,30 @@ class Slot {
 			}
 		}
 		return false;
+	}
+}
+
+var filas = [];
+class Fila {
+	constructor(_dir,_tam) {
+		this.dir = _dir;
+		this.tam = _tam;
+		this.id = filas.length;
+		filas.push(this);
+		this.bolas = [];
+
+		this.el = document.createElement("div");
+		this.el.classList.add("fila");
+	}
+}
+class Bola {
+	constructor(_fila,_cor) {
+		this.fila = _fila;
+		this.cor = _cor;
+		this.fila.bolas.push(this);
+
+		this.el = document.createElement("div");
+		this.el.classList.add("bola");
 	}
 }
 
