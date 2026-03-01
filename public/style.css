@@ -5,6 +5,16 @@ body {
 	background-color: #F00;
 }
 
+#menu {
+	flex-grow: 2;
+	align-content: center;
+	background-color: #AAA;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
 #wrapper {
 	user-select: none;
 	display: flex;
@@ -30,6 +40,7 @@ body {
 	overflow: hidden;
 	flex-shrink: 2;
 	height: 100%;
+	padding: 0px 10px;
 }
 
 .bola {
@@ -93,5 +104,6 @@ body {
 	align-items: center;
 	justify-content: center;
 	transition: 0.1s top, 0.1s left;
-	border: 1px solid #AAA;
+	border: 4px ridge #FFF4;
+	box-sizing: border-box;
 }

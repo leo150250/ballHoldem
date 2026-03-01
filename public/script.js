@@ -1,5 +1,9 @@
 const divAreaTabuleiro = document.getElementById("areaTabuleiro");
 const divAreaBolas = document.getElementById("areaBolas");
+const sfxBola = document.getElementById("sfxBola");
+const sfxMover = document.getElementById("sfxMover");
+const sfxPeca = document.getElementById("sfxPeca");
+const sfxTabuleiro = document.getElementById("sfxTabuleiro");
 
 var tabuleiro = null;
 var pecaSelecionada = null;
@@ -8,6 +12,8 @@ var filas = [];
 //Origem XY do mouse, para movimentação de peças
 var origX = 0;
 var origY = 0;
+
+//#region Classes
 
 class Tabuleiro {
 	constructor(_x,_y) {
@@ -23,7 +29,7 @@ class Tabuleiro {
 		this.origens = [];
 		this.gerarCelulas(_x,_y);
 		this.pecas = [];
-		this.gerarPecas(20,5);
+		this.gerarPecas(10,8);
 		this.reposicionarPecas();
 	}
 	gerarCelulas(_x,_y) {
@@ -38,7 +44,7 @@ class Tabuleiro {
 	gerarPecas(_numPecas = 5, _maxSlots = 5) {
 		for (let i = 0; i < _numPecas; i++) {
 			let origem = this.origens[Math.floor(Math.random()*this.numOrigens)];
-			let numSlots = Math.floor(Math.random()*_maxSlots);
+			let numSlots = Math.ceil(Math.random()*_maxSlots);
 			if (numSlots <= 1) {
 				numSlots = 2;
 			}
@@ -99,8 +105,24 @@ class Tabuleiro {
 		celulaOrigem.el.style.borderTop = "0px";
 		this.origens.push(celulaOrigem);
 	}
+	destruir() {
+		this.pecas.forEach(_peca => {
+			_peca.destruir();
+		});
+		this.pecas = [];
+		this.celulas.forEach(_posX => {
+			_posX.forEach(_celula => {
+				_celula.destruir();
+			});
+		});
+		this.celulas = [];
+		divAreaTabuleiro.removeChild(this.el);
+		this.filas.forEach(_fila => {
+			_fila.destruir();
+		});
+		tabuleiro = null;
+	}
 }
-
 class Celula {
 	constructor(_tabuleiro,_x,_y) {
 		this.tabuleiro = _tabuleiro;
@@ -150,8 +172,10 @@ class Celula {
 			}
 		}
 	}
+	destruir() {
+		this.tabuleiro.el.removeChild(this.el);
+	}
 }
-
 class Peca {
 	constructor(_tabuleiro,_x,_y,_slots=2) {
 		this.tabuleiro = _tabuleiro;
@@ -348,6 +372,7 @@ class Peca {
 		});
 		if (!adquirirBola) return false;
 		if (slotsLivres.length == 0) {
+			sfxPeca.play();
 			this.destruir();
 			return false;
 		}
@@ -359,7 +384,8 @@ class Peca {
 			if (proximaBola().cor == this.tipoBolas) {
 				let bolaExtraida = extrairProximaBola();
 				slotsLivres[0].obterBola(bolaExtraida);
-				console.log(bolaExtraida);
+				//console.log(bolaExtraida);
+				sfxBola.play();
 				setTimeout(()=>{
 					this.computarSlots()
 				}, 100);
@@ -370,8 +396,10 @@ class Peca {
 	}
 	descomputarSlots() {
 		this.slots.forEach(_slot => {
-			_slot.celula.computarSlot(null);
-			_slot.celula = null;
+			if (_slot.celula != null) {
+				_slot.celula.computarSlot(null);
+				_slot.celula = null;
+			}
 		});
 	}
 	deslizarDireita() {
@@ -438,7 +466,6 @@ class Peca {
 		});
 	}
 }
-
 class Slot {
 	constructor(_peca,_x,_y) {
 		this.peca = _peca;
@@ -482,18 +509,22 @@ class Slot {
 		if (this.verificaVizinho(0)) {
 			this.el.style.borderTopRightRadius = "0px";
 			this.el.style.borderBottomRightRadius = "0px";
+			this.el.style.borderRightWidth = "0px";
 		}
 		if (this.verificaVizinho(1)) {
 			this.el.style.borderTopRightRadius = "0px";
 			this.el.style.borderTopLeftRadius = "0px";
+			this.el.style.borderTopWidth = "0px";
 		}
 		if (this.verificaVizinho(2)) {
 			this.el.style.borderTopLeftRadius = "0px";
 			this.el.style.borderBottomLeftRadius = "0px";
+			this.el.style.borderLeftWidth = "0px";
 		}
 		if (this.verificaVizinho(3)) {
 			this.el.style.borderBottomLeftRadius = "0px";
 			this.el.style.borderBottomRightRadius = "0px";
+			this.el.style.borderBottomWidth = "0px";
 		}
 	}
 	verificaVizinho(_viz) {
@@ -549,6 +580,13 @@ class Fila {
 		this.el.removeChild(bolaExtraida.el);
 		return bolaExtraida;
 	}
+	destruir() {
+		this.bolas.forEach(_bola => {
+			this.el.removeChild(_bola.el);
+		});
+		this.bolas = [];
+		divAreaBolas.removeChild(this.el);
+	}
 }
 class Bola {
 	constructor(_fila,_cor) {
@@ -563,6 +601,9 @@ class Bola {
 		this.fila.el.appendChild(this.el);
 	}
 }
+
+//#region Funções
+
 function selecionarPeca(_peca,_ev) {
 	if (pecaSelecionada != null) {
 		desselecionarPeca();
@@ -582,21 +623,25 @@ function desselecionarPeca() {
 function moverPeca(_ev) {
 	if (_ev.clientX > origX + 25) {
 		if(pecaSelecionada.moverDireita()) {
+			sfxMover.play();
 			origX+=50;
 		}
 	}
 	if (_ev.clientX < origX - 25) {
 		if(pecaSelecionada.moverEsquerda()) {
+			sfxMover.play();
 			origX-=50;
 		}
 	}
 	if (_ev.clientY > origY + 25) {
 		if(pecaSelecionada.moverAbaixo()) {
+			sfxMover.play();
 			origY+=50;
 		}
 	}
 	if (_ev.clientY < origY - 25) {
 		if(pecaSelecionada.moverAcima()) {
+			sfxMover.play();
 			origY-=50;
 		}
 	}
@@ -636,6 +681,16 @@ function criarBolasAleatorias(_num,_limitCor = 8) {
 		adicionarBola(cor);
 	}
 }
+function iniciarNovoJogo() {
+	if (tabuleiro != null) {
+		tabuleiro.destruir();
+	}
+	new Fila(3,0);
+	new Tabuleiro(9,9);
+	sfxTabuleiro.play();
+}
+
+//#region Event Listeners
 
 document.addEventListener("keydown",(ev)=>{
 	if (pecaSelecionada != null) {
@@ -665,7 +720,3 @@ window.addEventListener("resize",(ev)=>{
 		tabuleiro.reposicionarPecas();
 	}
 });
-
-//Início do jogo
-new Fila(3,0);
-new Tabuleiro(9,8);
