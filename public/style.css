@@ -9,14 +9,69 @@ body {
 	user-select: none;
 	display: flex;
 	align-items: center;
+	justify-content: flex-end;
 	width: 100vw;
 	height: 100vh;
 	flex-direction: column;
+	position: relative;
+}
+
+#areaBolas {
+	align-items: center;
+	flex-shrink: 2;
+	position: relative;
+	overflow: hidden;
+}
+
+.fila {
+	background-color: #DDD;
+	position: relative;
+	display: flex;
+	overflow: hidden;
+	flex-shrink: 2;
+	height: 100%;
+}
+
+.bola {
+	width: 40px;
+	height: 40px;
+	flex-shrink: 0;
+	border-radius: 100%;
+	position: relative;
+	box-shadow: 5px 5px 10px #0004;
+}
+.bola.cor0 {
+	background: radial-gradient(circle at 30% 30%, #FFF, #AAA);
+}
+.bola.cor1 {
+	background: radial-gradient(circle at 30% 30%, #FFF, #F00);
+}
+.bola.cor2 {
+	background: radial-gradient(circle at 30% 30%, #FFF, #00F);
+}
+.bola.cor3 {
+	background: radial-gradient(circle at 30% 30%, #FFF, #0F0);
+}
+.bola.cor4 {
+	background: radial-gradient(circle at 30% 30%, #FFF, #FF0);
+}
+.bola.cor5 {
+	background: radial-gradient(circle at 30% 30%, #FFF, #0FF);
+}
+.bola.cor6 {
+	background: radial-gradient(circle at 30% 30%, #FFF, #F0F);
+}
+.bola.cor7 {
+	background: radial-gradient(circle at 30% 30%, #FFF, #000);
+}
+.bola:first-child {
+	margin-bottom: 10px;
 }
 
 #areaTabuleiro {
 	align-items: center;
 	width: 100%;
+	flex-shrink: 0;
 }
 .tabuleiro {
 	background-color: #EEE;
@@ -38,9 +93,5 @@ body {
 	align-items: center;
 	justify-content: center;
 	transition: 0.1s top, 0.1s left;
-}
-
-#areaBolas {
-	width: 100%;
-	flex-grow: 2;
+	border: 1px solid #AAA;
 }

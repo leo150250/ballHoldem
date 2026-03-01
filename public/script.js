@@ -3,6 +3,11 @@ const divAreaBolas = document.getElementById("areaBolas");
 
 var tabuleiro = null;
 var pecaSelecionada = null;
+var filas = [];
+
+//Origem XY do mouse, para movimentação de peças
+var origX = 0;
+var origY = 0;
 
 class Tabuleiro {
 	constructor(_x,_y) {
@@ -18,7 +23,7 @@ class Tabuleiro {
 		this.origens = [];
 		this.gerarCelulas(_x,_y);
 		this.pecas = [];
-		this.gerarPecas(5);
+		this.gerarPecas(20,5);
 		this.reposicionarPecas();
 	}
 	gerarCelulas(_x,_y) {
@@ -30,15 +35,21 @@ class Tabuleiro {
 		this.computarVizinhos();
 		this.computarOrigens(this.numOrigens);
 	}
-	gerarPecas(_numPecas = 5) {
+	gerarPecas(_numPecas = 5, _maxSlots = 5) {
 		for (let i = 0; i < _numPecas; i++) {
 			let origem = this.origens[Math.floor(Math.random()*this.numOrigens)];
-			let novaPeca = this.gerarPeca(origem.x,origem.y,_numPecas);
+			let numSlots = Math.floor(Math.random()*_maxSlots);
+			if (numSlots <= 1) {
+				numSlots = 2;
+			}
+			let novaPeca = this.gerarPeca(origem.x,origem.y,numSlots);
 			if (novaPeca.slots.length == 0) {
 				this.pecas.pop();
 				i--;
 				continue;
 			}
+			filas[0].tam+=novaPeca.slots.length;
+			criarBolasAleatorias(novaPeca.slots.length,4);
 			novaPeca.procurarEncaixe();
 		}
 		//this.gerarPeca(0,0,4);
@@ -152,6 +163,7 @@ class Peca {
 		this.slots = [];
 		this.gerarSlots(_slots);
 		this.atualizarVisual();
+		this.tipoBolas = -1;
 	}
 	gerarSlots(_slots) {
 		let xGerar = this.x;
@@ -196,7 +208,7 @@ class Peca {
 			}
 		}
 		if (this.slots.length == 0) {
-			console.log(`AVISO: Preça ${this.id} não foi criada com sucesso!!`);
+			console.log(`AVISO: Peça ${this.id} não foi criada com sucesso!!`);
 			return false;
 		}
 		console.log(`Peça ${this.id} criada com ${this.slots.length} slots`);
@@ -215,7 +227,7 @@ class Peca {
 
 	}
 	desselecionarPeca() {
-
+		this.computarSlots();
 	}
 	livreDireita() {
 		let podeMover = true;
@@ -321,6 +333,41 @@ class Peca {
 		this.reposicionarSlots();
 		return true;
 	}
+	computarSlots() {
+		let adquirirBola = false;
+		let slotsLivres = [];
+		this.tabuleiro.origens.forEach(_origem => {
+			this.slots.forEach(_slot => {
+				if (_slot.bola == null) {
+					slotsLivres.push(_slot);
+				}
+				if (_origem == _slot.celula) {
+					adquirirBola = true;
+				};
+			});
+		});
+		if (!adquirirBola) return false;
+		if (slotsLivres.length == 0) {
+			this.destruir();
+			return false;
+		}
+
+		if (proximaBola() != null) {
+			if (this.tipoBolas == -1) {
+				this.tipoBolas = proximaBola().cor;
+			};
+			if (proximaBola().cor == this.tipoBolas) {
+				let bolaExtraida = extrairProximaBola();
+				slotsLivres[0].obterBola(bolaExtraida);
+				console.log(bolaExtraida);
+				setTimeout(()=>{
+					this.computarSlots()
+				}, 100);
+				return true;
+			}
+		}
+		return false;
+	}
 	descomputarSlots() {
 		this.slots.forEach(_slot => {
 			_slot.celula.computarSlot(null);
@@ -357,11 +404,21 @@ class Peca {
 				console.log("Desisto de tentar mover!");
 				break;
 			}
-			switch (Math.floor(Math.random()*4)) {
-				case 0: this.deslizarDireita(); break;
-				case 1: this.deslizarAcima(); break;
-				case 2: this.deslizarEsquerda(); break;
-				case 3: this.deslizarAbaixo(); break;
+			if (tentativa == 0) {
+				this.deslizarAbaixo();
+			} else {
+				switch (Math.floor(Math.random()*4)) {
+					case 0: this.deslizarDireita(); break;
+					case 1:
+						if (tentativa < 40) {
+							this.deslizarAbaixo();
+						} else {
+							this.deslizarAbaixo();
+						}
+						break;
+					case 2: this.deslizarEsquerda(); break;
+					case 3: this.deslizarAbaixo(); break;
+				}
 			}
 			encaixes = 0;
 			if (this.livreDireita()) encaixes++;
@@ -374,6 +431,12 @@ class Peca {
 			tentativa++;
 		}
 	}
+	destruir() {
+		this.descomputarSlots();
+		this.slots.forEach(_slot => {
+			this.tabuleiro.el.removeChild(_slot.el);
+		});
+	}
 }
 
 class Slot {
@@ -383,7 +446,7 @@ class Slot {
 		this.peca.slots.push(this);
 		this.el = document.createElement("div");
 		this.el.classList.add("slot");
-		this.el.innerText = `${this.peca.id}-${this.id}`;
+		//this.el.innerText = `${this.peca.id}-${this.id}`;
 		this.el.onmousedown = (_ev) => {
 			selecionarPeca(this.peca,_ev);
 		}
@@ -392,6 +455,7 @@ class Slot {
 		this.celula = null;
 		this.posicionar(_x,_y);
 		this.peca.tabuleiro.el.appendChild(this.el);
+		this.bola = null;
 	}
 	posicionar(_x,_y,_atualizarPos = true) {
 		if (this.celula != null) {
@@ -442,9 +506,11 @@ class Slot {
 		}
 		return false;
 	}
+	obterBola(_bola) {
+		this.bola = _bola;
+		this.el.appendChild(this.bola.el);
+	}
 }
-
-var filas = [];
 class Fila {
 	constructor(_dir,_tam) {
 		this.dir = _dir;
@@ -455,6 +521,33 @@ class Fila {
 
 		this.el = document.createElement("div");
 		this.el.classList.add("fila");
+
+		switch (this.dir) {
+			case 0:
+				this.el.style.flexDirection = "row-reverse";
+				break;
+			case 1:
+				this.el.style.flexDirection = "column";
+				break;
+			case 2:
+				this.el.style.flexDirection = "row";
+				break;
+			case 3:
+				this.el.style.flexDirection = "column-reverse";
+				this.el.style.alignItems = "center";
+				break;
+		}
+
+		divAreaBolas.appendChild(this.el);
+	}
+	adicionarBola(_cor) {
+		let novaBola = new Bola(this,_cor);
+		//this.el.scrollTop = this.el.offsetHeight;
+	}
+	extrairProximaBola() {
+		let bolaExtraida = this.bolas.shift();
+		this.el.removeChild(bolaExtraida.el);
+		return bolaExtraida;
 	}
 }
 class Bola {
@@ -465,12 +558,11 @@ class Bola {
 
 		this.el = document.createElement("div");
 		this.el.classList.add("bola");
+
+		this.el.classList.add("cor"+this.cor);
+		this.fila.el.appendChild(this.el);
 	}
 }
-
-var origX = 0;
-var origY = 0;
-
 function selecionarPeca(_peca,_ev) {
 	if (pecaSelecionada != null) {
 		desselecionarPeca();
@@ -509,9 +601,41 @@ function moverPeca(_ev) {
 		}
 	}
 }
-
-new Tabuleiro(9,5);
-console.log(tabuleiro);
+function adicionarBola(_cor = -1) {
+	let filaId = 0;
+	let filaAdicionar = filas[filaId];
+	while (filaAdicionar.bolas.length == filaAdicionar.tam) {
+		filaId++;
+		if (filaId == filas.length) {
+			console.log("Não dá mais pra adicionar bolas! Aumente as filas!!");
+			return false;
+		}
+		filaAdicionar = filas[filaId];
+	}
+	if (_cor == -1) {
+		_cor = Math.floor(Math.random()*8);
+	}
+	filaAdicionar.adicionarBola(_cor);
+}
+function proximaBola() {
+	if (filas[0].bolas.length > 0) {
+		return filas[0].bolas[0];
+	}
+	return null;
+}
+function extrairProximaBola() {
+	if (proximaBola() != null) {
+		let bolaExtraida = filas[0].extrairProximaBola();
+		return bolaExtraida;
+	}
+	return null;
+}
+function criarBolasAleatorias(_num,_limitCor = 8) {
+	let cor = Math.floor(Math.random()*_limitCor);
+	for (let i = 0; i < _num; i++) {
+		adicionarBola(cor);
+	}
+}
 
 document.addEventListener("keydown",(ev)=>{
 	if (pecaSelecionada != null) {
@@ -535,4 +659,13 @@ document.addEventListener("mouseup",(ev)=>{
 	if (pecaSelecionada != null) {
 		desselecionarPeca();
 	}
-})
+});
+window.addEventListener("resize",(ev)=>{
+	if (tabuleiro != null) {
+		tabuleiro.reposicionarPecas();
+	}
+});
+
+//Início do jogo
+new Fila(3,0);
+new Tabuleiro(9,8);
