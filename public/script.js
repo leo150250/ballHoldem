@@ -372,6 +372,7 @@ class Peca {
 		});
 		if (!adquirirBola) return false;
 		if (slotsLivres.length == 0) {
+			sfxPeca.currentTime = 0;
 			sfxPeca.play();
 			this.destruir();
 			return false;
@@ -385,6 +386,7 @@ class Peca {
 				let bolaExtraida = extrairProximaBola();
 				slotsLivres[0].obterBola(bolaExtraida);
 				//console.log(bolaExtraida);
+				sfxBola.currentTime = 0;
 				sfxBola.play();
 				setTimeout(()=>{
 					this.computarSlots()
@@ -675,24 +677,28 @@ function moverPeca(_ev) {
 	}
 	if (clientX > origX + 25) {
 		if(pecaSelecionada.moverDireita()) {
+			sfxMover.currentTime = 0;
 			sfxMover.play();
 			origX+=50;
 		}
 	}
 	if (clientX < origX - 25) {
 		if(pecaSelecionada.moverEsquerda()) {
+			sfxMover.currentTime = 0;
 			sfxMover.play();
 			origX-=50;
 		}
 	}
 	if (clientY > origY + 25) {
 		if(pecaSelecionada.moverAbaixo()) {
+			sfxMover.currentTime = 0;
 			sfxMover.play();
 			origY+=50;
 		}
 	}
 	if (clientY < origY - 25) {
 		if(pecaSelecionada.moverAcima()) {
+			sfxMover.currentTime = 0;
 			sfxMover.play();
 			origY-=50;
 		}
@@ -754,6 +760,7 @@ function iniciarNovoJogo() {
 	filas = [];
 	gerarNovaFila();
 	new Tabuleiro(9,9);
+	sfxTabuleiro.currentTime = 0;
 	sfxTabuleiro.play();
 }
 
