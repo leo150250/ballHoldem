@@ -482,6 +482,9 @@ class Slot {
 		this.el.onmousedown = (_ev) => {
 			selecionarPeca(this.peca,_ev);
 		}
+		this.el.ontouchstart = (_ev) => {
+			selecionarPeca(this.peca,_ev);
+		}
 		this.x = _x;
 		this.y = _y;
 		this.celula = null;
@@ -636,37 +639,57 @@ function selecionarPeca(_peca,_ev) {
 		desselecionarPeca();
 	}
 	pecaSelecionada = _peca;
-	origX = _ev.clientX;
-	origY = _ev.clientY;
+	_ev.preventDefault();
+	if (_ev.type == "mousedown") {
+		origX = _ev.clientX;
+		origY = _ev.clientY;
+	}
+	if (_ev.type == "touchstart") {
+		origX = _ev.touches[0].clientX;
+		origY = _ev.touches[0].clientY;
+	}
+	//console.log(_ev);
 	document.addEventListener("mousemove", moverPeca);
+	document.addEventListener("touchmove", moverPeca);
 	console.log(`Peça ${pecaSelecionada.id} selecionada`);
 }
 function desselecionarPeca() {
 	pecaSelecionada.desselecionarPeca();
 	document.removeEventListener("mousemove", moverPeca);
+	document.removeEventListener("touchmove", moverPeca);
 	console.log(`Peça ${pecaSelecionada.id} desselecionada`);
 	pecaSelecionada = null;
 }
 function moverPeca(_ev) {
-	if (_ev.clientX > origX + 25) {
+	let clientX = -1;
+	let clientY = -1;
+	if (_ev.type == "mousemove") {
+		clientX = _ev.clientX;
+		clientY = _ev.clientY;
+	}
+	if (_ev.type == "touchmove") {
+		clientX = _ev.touches[0].clientX;
+		clientY = _ev.touches[0].clientY;
+	}
+	if (clientX > origX + 25) {
 		if(pecaSelecionada.moverDireita()) {
 			sfxMover.play();
 			origX+=50;
 		}
 	}
-	if (_ev.clientX < origX - 25) {
+	if (clientX < origX - 25) {
 		if(pecaSelecionada.moverEsquerda()) {
 			sfxMover.play();
 			origX-=50;
 		}
 	}
-	if (_ev.clientY > origY + 25) {
+	if (clientY > origY + 25) {
 		if(pecaSelecionada.moverAbaixo()) {
 			sfxMover.play();
 			origY+=50;
 		}
 	}
-	if (_ev.clientY < origY - 25) {
+	if (clientY < origY - 25) {
 		if(pecaSelecionada.moverAcima()) {
 			sfxMover.play();
 			origY-=50;
@@ -734,25 +757,30 @@ function iniciarNovoJogo() {
 
 //#region Event Listeners
 
-document.addEventListener("keydown",(ev)=>{
+// document.addEventListener("keydown",(ev)=>{
+// 	if (pecaSelecionada != null) {
+// 		switch(ev.key) {
+// 			case "ArrowUp":
+// 				pecaSelecionada.deslizarAcima();
+// 				break;
+// 			case "ArrowDown":
+// 				pecaSelecionada.deslizarAbaixo();
+// 				break;
+// 			case "ArrowLeft":
+// 				pecaSelecionada.deslizarEsquerda();
+// 				break;
+// 			case "ArrowRight":
+// 				pecaSelecionada.deslizarDireita();
+// 				break;
+// 		}
+// 	}
+// });
+document.addEventListener("mouseup",(ev)=>{
 	if (pecaSelecionada != null) {
-		switch(ev.key) {
-			case "ArrowUp":
-				pecaSelecionada.deslizarAcima();
-				break;
-			case "ArrowDown":
-				pecaSelecionada.deslizarAbaixo();
-				break;
-			case "ArrowLeft":
-				pecaSelecionada.deslizarEsquerda();
-				break;
-			case "ArrowRight":
-				pecaSelecionada.deslizarDireita();
-				break;
-		}
+		desselecionarPeca();
 	}
 });
-document.addEventListener("mouseup",(ev)=>{
+document.addEventListener("touchend",(ev)=>{
 	if (pecaSelecionada != null) {
 		desselecionarPeca();
 	}
