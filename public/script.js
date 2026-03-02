@@ -35,8 +35,8 @@ class Tabuleiro {
 	gerarCelulas(_x,_y) {
 		this.x = _x;
 		this.y = _y;
-		this.el.style.gridTemplateColumns = `repeat(${this.x}, 50px)`;
-		this.el.style.gridTemplateRows = `repeat(${this.y}, 50px)`;
+		this.el.style.gridTemplateColumns = `repeat(${this.x}, minmax(10px, 50px))`;
+		this.el.style.gridTemplateRows = `repeat(${this.y}, 1fr)`;
 		this.celulas = Array.from({length: this.x},(_v,_iX)=>Array.from({length: this.y},(_v,_iY)=>new Celula(this,_iX,_iY)));
 		this.computarVizinhos();
 		this.computarOrigens(this.numOrigens);
@@ -507,6 +507,8 @@ class Slot {
 	atualizarPosicao() {
 		this.el.style.left = (this.celula.el.offsetLeft) + "px";
 		this.el.style.top = (this.celula.el.offsetTop) + "px";
+		this.el.style.width = (this.celula.el.offsetWidth) + "px";
+		this.el.style.height = (this.celula.el.offsetHeight) + "px";
 	}
 	atualizarVisual() {
 		this.el.style.borderTopLeftRadius = null;
