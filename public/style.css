@@ -27,10 +27,11 @@ body {
 }
 
 #areaBolas {
-	align-items: center;
 	flex-shrink: 2;
 	position: relative;
 	overflow: hidden;
+	display: flex;
+	flex-direction: column-reverse;
 }
 
 .fila {
@@ -38,9 +39,8 @@ body {
 	position: relative;
 	display: flex;
 	overflow: hidden;
-	flex-shrink: 2;
-	height: 100%;
 	padding: 0px 10px;
+	flex-shrink: 0;
 }
 
 .bola {
@@ -49,7 +49,7 @@ body {
 	flex-shrink: 0;
 	border-radius: 100%;
 	position: relative;
-	box-shadow: 5px 5px 10px #0004;
+	box-shadow: 2px 2px 5px #0004;
 }
 .bola.cor0 {
 	background: radial-gradient(circle at 30% 30%, #FFF, #AAA);
@@ -74,9 +74,6 @@ body {
 }
 .bola.cor7 {
 	background: radial-gradient(circle at 30% 30%, #FFF, #000);
-}
-.bola:first-child {
-	margin-bottom: 10px;
 }
 
 #areaTabuleiro {

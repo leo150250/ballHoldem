@@ -54,7 +54,7 @@ class Tabuleiro {
 				i--;
 				continue;
 			}
-			filas[0].tam+=novaPeca.slots.length;
+			//filas[0].tam+=novaPeca.slots.length;
 			criarBolasAleatorias(novaPeca.slots.length,4);
 			novaPeca.procurarEncaixe();
 		}
@@ -117,7 +117,7 @@ class Tabuleiro {
 		});
 		this.celulas = [];
 		divAreaTabuleiro.removeChild(this.el);
-		this.filas.forEach(_fila => {
+		filas.forEach(_fila => {
 			_fila.destruir();
 		});
 		tabuleiro = null;
@@ -464,6 +464,11 @@ class Peca {
 		this.slots.forEach(_slot => {
 			this.tabuleiro.el.removeChild(_slot.el);
 		});
+		this.tabuleiro.pecas.forEach((_peca,_indice) => {
+			if (_peca.id == this.id) {
+				this.tabuleiro.pecas.splice(_indice, 1);
+			}
+		});
 	}
 }
 class Slot {
@@ -556,16 +561,23 @@ class Fila {
 		switch (this.dir) {
 			case 0:
 				this.el.style.flexDirection = "row-reverse";
+				this.el.style.justifyContent = "flex-end";
 				break;
 			case 1:
 				this.el.style.flexDirection = "column";
 				break;
 			case 2:
 				this.el.style.flexDirection = "row";
+				this.el.style.justifyContent = "flex-start";
 				break;
 			case 3:
 				this.el.style.flexDirection = "column-reverse";
-				this.el.style.alignItems = "center";
+				if (this.id > 0) {
+					if (filas[this.id - 1].dir == 2) {
+						this.el.style.alignItems = "flex-end";
+					}
+				}
+				//this.el.style.alignItems = "center";
 				break;
 		}
 
@@ -576,9 +588,19 @@ class Fila {
 		//this.el.scrollTop = this.el.offsetHeight;
 	}
 	extrairProximaBola() {
-		let bolaExtraida = this.bolas.shift();
-		this.el.removeChild(bolaExtraida.el);
-		return bolaExtraida;
+		if (this.bolas.length > 0) {
+			let bolaExtraida = this.bolas.shift();
+			this.el.removeChild(bolaExtraida.el);
+			if (this.id < filas.length - 1) {
+				let bolaFila = filas[this.id + 1].extrairProximaBola();
+				if (bolaFila != null) {
+					bolaFila.mudarFila(this);
+				}
+			}
+			return bolaExtraida;
+		} else {
+			return null;
+		}
 	}
 	destruir() {
 		this.bolas.forEach(_bola => {
@@ -598,6 +620,11 @@ class Bola {
 		this.el.classList.add("bola");
 
 		this.el.classList.add("cor"+this.cor);
+		this.fila.el.appendChild(this.el);
+	}
+	mudarFila(_fila) {
+		this.fila = _fila;
+		this.fila.bolas.push(this);
 		this.fila.el.appendChild(this.el);
 	}
 }
@@ -652,8 +679,7 @@ function adicionarBola(_cor = -1) {
 	while (filaAdicionar.bolas.length == filaAdicionar.tam) {
 		filaId++;
 		if (filaId == filas.length) {
-			console.log("Não dá mais pra adicionar bolas! Aumente as filas!!");
-			return false;
+			gerarNovaFila();
 		}
 		filaAdicionar = filas[filaId];
 	}
@@ -681,11 +707,27 @@ function criarBolasAleatorias(_num,_limitCor = 8) {
 		adicionarBola(cor);
 	}
 }
+function gerarNovaFila() {
+	if (filas.length == 0) {
+		new Fila(0,4);
+	} else {
+		if (filas.length % 2 == 1) {
+			new Fila(3,1);
+		} else {
+			if (filas.length % 4 == 0) {
+				new Fila(0,7);
+			} else {
+				new Fila(2,7);
+			}
+		}
+	}
+}
 function iniciarNovoJogo() {
 	if (tabuleiro != null) {
 		tabuleiro.destruir();
 	}
-	new Fila(3,0);
+	filas = [];
+	gerarNovaFila();
 	new Tabuleiro(9,9);
 	sfxTabuleiro.play();
 }
